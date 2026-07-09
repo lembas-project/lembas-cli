@@ -12,7 +12,6 @@ install-debug: debug
 
 lock:
 	pixi lock --manifest-path locks/pixi.toml
-	mv locks/pixi.lock locks/lembas.lock
 
 clean:
 	cargo clean

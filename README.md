@@ -15,17 +15,17 @@ The result is a single `lembas` executable that works out of the box without req
 
 ```
 lembas (Rust binary)
-  └── ~/.lembas/runtime/lembas/ (conda environment)
+  └── ~/.lembas/runtime/ (conda environment)
         ├── python
         ├── lembas-core
         └── pixi
 ```
 
-The Rust binary uses [conda-ship](https://github.com/jezdez/conda-ship)'s Fleet API to manage the embedded conda environment. The environment is:
+The Rust binary uses [rattler](https://github.com/conda/rattler) to manage the embedded conda environment. The environment is:
 
 - **Self-updating**: automatically updates when the embedded lockfile changes
 - **Cached**: packages are cached and shared across updates
-- **Locked**: exact package versions are pinned via `locks/lembas.lock`
+- **Locked**: exact package versions are pinned via `locks/pixi.lock`
 
 ## Building
 
@@ -42,7 +42,7 @@ The release binary is optimized for size with LTO and stripping enabled.
 
 ```bash
 # Edit locks/pixi.toml to change dependencies, then:
-make lock       # regenerate locks/lembas.lock
+make lock       # regenerate locks/pixi.lock
 make release    # rebuild with new lockfile
 ```
 

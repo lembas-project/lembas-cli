@@ -8,3 +8,8 @@ pub(crate) fn lembas_home() -> PathBuf {
         .expect("could not determine home directory")
         .join(".lembas")
 }
+
+/// Get the runtime prefix directory (~/.lembas/runtime).
+pub(crate) fn runtime_prefix() -> PathBuf {
+    lembas_home().join("runtime")
+}
