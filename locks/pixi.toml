@@ -1,6 +1,5 @@
-# This pixi.toml is used to generate lembas.lock
-# Run: pixi lock --manifest-path locks/pixi.toml
-# Then rename pixi.lock to lembas.lock
+# This pixi.toml defines the embedded lembas runtime.
+# Run `make lock` to regenerate locks/pixi.lock after changes.
 
 [workspace]
 name = "lembas-runtime"
@@ -9,5 +8,5 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 
 [dependencies]
 python = ">=3.11"
-lembas = ">=0.3.1"
+lembas = "==0.3.1"  # Keep in sync with Cargo.toml version
 pixi = "*"
