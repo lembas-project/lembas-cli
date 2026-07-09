@@ -4,14 +4,14 @@ use miette::{miette, Result};
 use sha2::{Digest, Sha256};
 
 /// Compute SHA256 hash of lock content.
-pub fn lock_sha256(lock_content: &str) -> String {
+pub(crate) fn lock_sha256(lock_content: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.update(lock_content.as_bytes());
     format!("{:x}", hasher.finalize())
 }
 
 /// Extract version from lockfile for a package.
-pub fn version_from_lock(lock_content: &str, package_name: &str) -> Result<String> {
+pub(crate) fn version_from_lock(lock_content: &str, package_name: &str) -> Result<String> {
     // Parse YAML lockfile to find the package version
     // This is a simplified parser - just look for the package in the lockfile
     for line in lock_content.lines() {
