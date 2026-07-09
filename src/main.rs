@@ -9,6 +9,7 @@ use std::process::ExitCode;
 
 use conda_ship::fleet::{Fleet, InstallOptions, RuntimeSpec};
 use miette::{Context, IntoDiagnostic, Result};
+use tracing_subscriber;
 
 mod paths;
 mod runtime;
