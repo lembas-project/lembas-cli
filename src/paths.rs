@@ -2,8 +2,10 @@
 
 use std::path::PathBuf;
 
+use dirs;
+
 /// Get the lembas home directory (~/.lembas).
-pub fn lembas_home() -> PathBuf {
+fn lembas_home() -> PathBuf {
     dirs::home_dir()
         .expect("could not determine home directory")
         .join(".lembas")
