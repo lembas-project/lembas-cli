@@ -1,10 +1,14 @@
-.PHONY: debug release lock clean
+.PHONY: debug release install lock clean
 
 debug:
 	cargo build
 
 release:
 	cargo build --release
+
+install: debug
+	mkdir -p ~/.local/bin
+	cp target/debug/lembas ~/.local/bin/
 
 lock:
 	pixi lock --manifest-path locks/pixi.toml
