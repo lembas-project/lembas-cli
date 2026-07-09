@@ -12,8 +12,7 @@ use tracing_subscriber;
 
 mod install;
 mod paths;
-
-const LEMBAS_LOCK: &str = include_str!("../locks/pixi.lock");
+mod runtime;
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -35,7 +34,7 @@ async fn main() -> ExitCode {
 }
 
 async fn run() -> Result<ExitCode> {
-    let prefix = install::ensure_runtime(LEMBAS_LOCK).await?;
+    let prefix = runtime::ensure_runtime().await?;
 
     // Get command line args (skip the program name)
     let args: Vec<String> = env::args().skip(1).collect();
