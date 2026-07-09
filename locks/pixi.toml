@@ -1,0 +1,13 @@
+# This pixi.toml is used to generate lembas.lock
+# Run: pixi lock --manifest-path locks/pixi.toml
+# Then rename pixi.lock to lembas.lock
+
+[workspace]
+name = "lembas-runtime"
+channels = ["conda-forge", "lembas-project"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[dependencies]
+python = ">=3.11"
+lembas = ">=0.3.1"
+pixi = "*"
