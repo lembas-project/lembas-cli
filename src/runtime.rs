@@ -63,8 +63,7 @@ fn version_from_lock(lock_content: &str, package_name: &str) -> miette::Result<S
 }
 
 /// Ensure the lembas runtime is installed and up-to-date.
-/// Returns the prefix path.
-pub async fn ensure_runtime() -> miette::Result<PathBuf> {
+async fn ensure_runtime() -> miette::Result<PathBuf> {
     let prefix = paths::runtime_prefix();
     let current_hash = lock_sha256(LOCKFILE);
 
@@ -86,4 +85,21 @@ pub async fn ensure_runtime() -> miette::Result<PathBuf> {
     }
 
     Ok(prefix)
+}
+
+/// Run `python -m lembas` with the given arguments in the runtime environment.
+pub async fn run_lembas(args: &[String]) -> miette::Result<i32> {
+    let prefix = ensure_runtime().await?;
+    let env_vars = install::activation_env(&prefix)?;
+    let python = prefix.join("bin").join("python");
+
+    let status = std::process::Command::new(&python)
+        .envs(&env_vars)
+        .args(["-m", "lembas"])
+        .args(args)
+        .status()
+        .into_diagnostic()
+        .context("failed to execute lembas")?;
+
+    Ok(status.code().unwrap_or(1))
 }

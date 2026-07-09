@@ -7,7 +7,6 @@
 use std::env;
 use std::process::ExitCode;
 
-use miette::{Context, IntoDiagnostic, Result};
 use tracing_subscriber;
 
 mod install;
@@ -24,38 +23,14 @@ async fn main() -> ExitCode {
         .with_writer(std::io::stderr)
         .init();
 
-    match run().await {
-        Ok(code) => code,
+    let args: Vec<String> = env::args().skip(1).collect();
+
+    match runtime::run_lembas(&args).await {
+        Ok(0) => ExitCode::SUCCESS,
+        Ok(code) => ExitCode::from(code as u8),
         Err(e) => {
             eprintln!("Error: {e:?}");
             ExitCode::FAILURE
         }
     }
-}
-
-async fn run() -> Result<ExitCode> {
-    let prefix = runtime::ensure_runtime().await?;
-
-    // Get command line args (skip the program name)
-    let args: Vec<String> = env::args().skip(1).collect();
-
-    // Build command with activated environment
-    let env_vars = install::activation_env(&prefix)?;
-    let python = prefix.join("bin").join("python");
-
-    let mut cmd = std::process::Command::new(&python);
-    cmd.envs(&env_vars);
-    cmd.args(["-m", "lembas"]);
-    cmd.args(&args);
-
-    let status = cmd
-        .status()
-        .into_diagnostic()
-        .context("failed to execute lembas")?;
-
-    Ok(if status.success() {
-        ExitCode::SUCCESS
-    } else {
-        ExitCode::from(status.code().unwrap_or(1) as u8)
-    })
 }
