@@ -12,7 +12,6 @@ use tracing_subscriber;
 
 mod install;
 mod paths;
-mod runtime;
 
 const LEMBAS_LOCK: &str = include_str!("../locks/pixi.lock");
 
@@ -36,26 +35,7 @@ async fn main() -> ExitCode {
 }
 
 async fn run() -> Result<ExitCode> {
-    let prefix = paths::runtime_prefix();
-    let current_hash = runtime::lock_sha256(LEMBAS_LOCK);
-
-    // Check if runtime needs installation or update
-    let needs_install = if !install::is_installed(&prefix) {
-        eprintln!("Installing lembas runtime (first run)...");
-        true
-    } else if !runtime::hash_matches(&prefix, &current_hash)? {
-        eprintln!("Updating lembas runtime...");
-        true
-    } else {
-        false
-    };
-
-    if needs_install {
-        install::install_from_lockfile(LEMBAS_LOCK, &prefix).await?;
-        runtime::write_hash(&prefix, &current_hash)?;
-        let version = runtime::version_from_lock(LEMBAS_LOCK, "lembas")?;
-        eprintln!("Installed lembas v{} to {}", version, prefix.display());
-    }
+    let prefix = install::ensure_runtime(LEMBAS_LOCK).await?;
 
     // Get command line args (skip the program name)
     let args: Vec<String> = env::args().skip(1).collect();
