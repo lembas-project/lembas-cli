@@ -30,17 +30,21 @@ The Rust binary uses [conda-ship](https://github.com/jezdez/conda-ship)'s Fleet 
 ## Building
 
 ```bash
-cargo build --release
+make debug      # build debug binary (default)
+make release    # build optimized release binary
+make install-debug  # build debug and symlink to ~/.local/bin/lembas
+make clean      # remove build artifacts
 ```
 
 The release binary is optimized for size with LTO and stripping enabled.
 
 ## Updating the embedded environment
 
-1. Edit `locks/pixi.toml` to change dependencies
-2. Run `pixi lock --manifest-path locks/pixi.toml`
-3. Rename `locks/pixi.lock` to `locks/lembas.lock`
-4. Rebuild the binary
+```bash
+# Edit locks/pixi.toml to change dependencies, then:
+make lock       # regenerate locks/lembas.lock
+make release    # rebuild with new lockfile
+```
 
 ## License
 
