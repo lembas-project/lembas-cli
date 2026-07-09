@@ -8,13 +8,13 @@ use sha2::{Digest, Sha256};
 const HASH_FILE: &str = ".lockfile-hash";
 
 /// Compute SHA256 hash of lock content.
-pub(crate) fn lock_sha256(lock_content: &str) -> String {
+pub fn lock_sha256(lock_content: &str) -> String {
     let hash = Sha256::digest(lock_content.as_bytes());
     format!("{:x}", hash)
 }
 
 /// Check if the stored hash matches the current hash.
-pub(crate) fn hash_matches(prefix: &Path, current_hash: &str) -> Result<bool> {
+pub fn hash_matches(prefix: &Path, current_hash: &str) -> Result<bool> {
     let hash_file = prefix.join(HASH_FILE);
     if !hash_file.exists() {
         return Ok(false);
@@ -26,7 +26,7 @@ pub(crate) fn hash_matches(prefix: &Path, current_hash: &str) -> Result<bool> {
 }
 
 /// Write the hash to the prefix.
-pub(crate) fn write_hash(prefix: &Path, hash: &str) -> Result<()> {
+pub fn write_hash(prefix: &Path, hash: &str) -> Result<()> {
     let hash_file = prefix.join(HASH_FILE);
     std::fs::write(&hash_file, hash)
         .into_diagnostic()
@@ -35,7 +35,7 @@ pub(crate) fn write_hash(prefix: &Path, hash: &str) -> Result<()> {
 }
 
 /// Extract version from lockfile for a package.
-pub(crate) fn version_from_lock(lock_content: &str, package_name: &str) -> Result<String> {
+pub fn version_from_lock(lock_content: &str, package_name: &str) -> Result<String> {
     for line in lock_content.lines() {
         let line = line.trim();
         // Look for conda package URLs like:

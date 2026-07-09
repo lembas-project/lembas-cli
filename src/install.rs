@@ -16,12 +16,12 @@ use rattler_shell::activation::{ActivationVariables, Activator, PathModification
 use rattler_shell::shell::ShellEnum;
 
 /// Check if a prefix has been installed.
-pub(crate) fn is_installed(prefix: &Path) -> bool {
+pub fn is_installed(prefix: &Path) -> bool {
     prefix.join("conda-meta").exists()
 }
 
 /// Install packages from a lockfile string to a prefix.
-pub(crate) async fn install_from_lockfile(lock_content: &str, prefix: &Path) -> miette::Result<()> {
+pub async fn install_from_lockfile(lock_content: &str, prefix: &Path) -> miette::Result<()> {
     let lock_file = LockFile::from_str_with_base_directory(lock_content, None)
         .into_diagnostic()
         .context("failed to parse lockfile")?;
@@ -102,7 +102,7 @@ pub(crate) async fn install_from_lockfile(lock_content: &str, prefix: &Path) -> 
 }
 
 /// Get environment variables for running commands in the installed prefix.
-pub(crate) fn activation_env(prefix: &Path) -> miette::Result<HashMap<String, String>> {
+pub fn activation_env(prefix: &Path) -> miette::Result<HashMap<String, String>> {
     let shell = ShellEnum::default();
     let activator = Activator::from_path(prefix, shell, Platform::current())
         .into_diagnostic()
