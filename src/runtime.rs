@@ -43,6 +43,23 @@ fn write_hash(prefix: &Path, hash: &str) -> miette::Result<()> {
     Ok(())
 }
 
+/// Extract lembas version from the embedded lockfile.
+pub fn lembas_version() -> Option<String> {
+    for line in LOCKFILE.lines() {
+        let line = line.trim();
+        if line.starts_with("- conda:")
+            && line.contains("/lembas-")
+            && let Some(filename) = line.rsplit('/').next()
+        {
+            let parts: Vec<&str> = filename.split('-').collect();
+            if parts.len() >= 2 {
+                return Some(parts[1].to_string());
+            }
+        }
+    }
+    None
+}
+
 /// Ensure the lembas runtime is installed and up-to-date.
 async fn ensure_runtime() -> miette::Result<PathBuf> {
     let prefix = paths::runtime_prefix();
@@ -157,5 +174,15 @@ mod tests {
         write_hash(dir.path(), "myhash").unwrap();
         let content = std::fs::read_to_string(dir.path().join(HASH_FILE)).unwrap();
         assert_eq!(content, "myhash");
+    }
+
+    #[test]
+    fn test_lembas_version_from_embedded_lockfile() {
+        // The embedded lockfile should contain a lembas package
+        let version = lembas_version();
+        assert!(version.is_some());
+        // Version should look like a semver (e.g., "0.3.1")
+        let v = version.unwrap();
+        assert!(v.chars().next().unwrap().is_ascii_digit());
     }
 }

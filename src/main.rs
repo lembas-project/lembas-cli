@@ -30,6 +30,14 @@ async fn main() -> ExitCode {
     // Extract the args (ignoring the program name/entrypoint)
     let args: Vec<String> = env::args().skip(1).collect();
 
+    // Handle --version locally (fast, no bootstrap needed)
+    if args.first().map(|s| s.as_str()) == Some("--version") {
+        let lembas_ver = runtime::lembas_version().unwrap_or_else(|| "unknown".to_string());
+        let cli_ver = env!("CARGO_PKG_VERSION");
+        tracing::info!("lembas {} (cli build {})", lembas_ver, cli_ver);
+        return ExitCode::SUCCESS;
+    }
+
     // Delegate to the managed lembas Python runtime
     match runtime::run_lembas(&args).await {
         Ok(0) => ExitCode::SUCCESS,

@@ -17,6 +17,16 @@
       "matchPackageNames": [
         "/^rattler/"
       ]
+    },
+    {
+      "description": "Auto-merge lembas-core updates",
+      "matchManagers": [
+        "pixi"
+      ],
+      "matchPackageNames": [
+        "lembas"
+      ],
+      "automerge": true
     }
   ]
 }
