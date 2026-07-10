@@ -4,6 +4,8 @@
 //! 1. Bootstraps a conda environment with lembas-core and pixi on first run
 //! 2. Delegates all commands to `python -m lembas` in that environment
 
+#![deny(clippy::print_stdout, clippy::print_stderr)]
+
 use std::env;
 use std::process::ExitCode;
 
@@ -30,7 +32,7 @@ async fn main() -> ExitCode {
         Ok(0) => ExitCode::SUCCESS,
         Ok(code) => ExitCode::from(code as u8),
         Err(e) => {
-            eprintln!("Error: {e:?}");
+            tracing::error!("{e:?}");
             ExitCode::FAILURE
         }
     }

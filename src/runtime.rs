@@ -69,10 +69,10 @@ async fn ensure_runtime() -> miette::Result<PathBuf> {
     let current_hash = lock_sha256(LOCKFILE);
 
     let needs_install = if !is_installed(&prefix) {
-        eprintln!("Installing lembas runtime (first run)...");
+        tracing::warn!("Installing lembas runtime (first run)...");
         true
     } else if !hash_matches(&prefix, &current_hash)? {
-        eprintln!("Updating lembas runtime...");
+        tracing::warn!("Updating lembas runtime...");
         true
     } else {
         false
@@ -82,7 +82,7 @@ async fn ensure_runtime() -> miette::Result<PathBuf> {
         install::install_from_lockfile(LOCKFILE, &prefix).await?;
         write_hash(&prefix, &current_hash)?;
         let version = version_from_lock(LOCKFILE, "lembas")?;
-        eprintln!("Installed lembas v{} to {}", version, prefix.display());
+        tracing::warn!("Installed lembas v{} to {}", version, prefix.display());
     }
 
     Ok(prefix)

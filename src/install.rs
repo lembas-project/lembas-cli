@@ -39,7 +39,7 @@ pub async fn install_from_lockfile(lock_content: &str, prefix: &Path) -> miette:
             miette::miette!("lockfile has no records for platform {}", current_platform)
         })?;
 
-    eprintln!(
+    tracing::info!(
         "   Lockfile contains {} packages for {}",
         records.len(),
         current_platform
@@ -84,9 +84,9 @@ pub async fn install_from_lockfile(lock_content: &str, prefix: &Path) -> miette:
         .context("failed to install packages")?;
 
     if result.transaction.operations.is_empty() {
-        eprintln!("   Already up to date");
+        tracing::info!("   Already up to date");
     } else {
-        eprintln!(
+        tracing::info!(
             "   Installed {} packages in {:.1}s",
             result.transaction.operations.len(),
             start.elapsed().as_secs_f64()
