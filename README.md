@@ -2,6 +2,24 @@
 
 Self-bootstrapping CLI for [lembas](https://github.com/lembas-project/lembas-core) lifecycle engineering analysis.
 
+## Installation
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/lembas-project/lembas-cli/main/scripts/install.sh | sh
+```
+
+Or with options:
+
+```bash
+# Install specific version
+curl -fsSL https://raw.githubusercontent.com/lembas-project/lembas-cli/main/scripts/install.sh | sh -s -- --version v0.3.1
+
+# Install to custom directory
+curl -fsSL https://raw.githubusercontent.com/lembas-project/lembas-cli/main/scripts/install.sh | sh -s -- --install-dir /usr/local/bin
+```
+
+Run `./install.sh --help` for all options.
+
 ## Overview
 
 This is a thin Rust binary that:
