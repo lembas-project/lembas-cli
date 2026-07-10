@@ -27,12 +27,6 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact: lembas-darwin-arm64
-          - os: macos-13
-            target: x86_64-apple-darwin
-            artifact: lembas-darwin-x86_64
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            artifact: lembas-windows-x86_64.exe
 
     steps:
       - name: Checkout
@@ -46,13 +40,8 @@ jobs:
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Rename binary (Unix)
-        if: runner.os != 'Windows'
+      - name: Rename binary
         run: mv target/${{ matrix.target }}/release/lembas ${{ matrix.artifact }}
-
-      - name: Rename binary (Windows)
-        if: runner.os == 'Windows'
-        run: mv target/${{ matrix.target }}/release/lembas.exe ${{ matrix.artifact }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0

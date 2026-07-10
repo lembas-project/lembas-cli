@@ -96,11 +96,7 @@ main() {
 
     local _version="${LEMBAS_VERSION:-$DEFAULT_VERSION}"
     local _install_dir="${LEMBAS_INSTALL_DIR:-$DEFAULT_INSTALL_DIR}"
-    local _exe_suffix=""
-    if [ "$_os" = "windows" ]; then
-        _exe_suffix=".exe"
-    fi
-    local _asset_name="lembas-${_target}${_exe_suffix}"
+    local _asset_name="lembas-${_target}"
 
     # Resolve version
     if [ "$_version" = "latest" ]; then
@@ -129,7 +125,7 @@ main() {
 
     verify_checksum "$_checksum_url" "$_tmp"
 
-    install_binary "$_tmp" "$_install_dir" "$_exe_suffix"
+    install_binary "$_tmp" "$_install_dir"
 
     add_to_path "$_install_dir"
 
@@ -140,10 +136,9 @@ detect_os() {
     local _os
     _os="$(uname -s)"
     case "$_os" in
-        Linux)                    echo "linux" ;;
-        Darwin)                   echo "darwin" ;;
-        MINGW*|MSYS*|CYGWIN*)     echo "windows" ;;
-        *)                        err "Unsupported operating system: %s" "$_os" ;;
+        Linux)    echo "linux" ;;
+        Darwin)   echo "darwin" ;;
+        *)        err "Unsupported operating system: %s" "$_os" ;;
     esac
 }
 
@@ -162,10 +157,8 @@ map_target() {
     case "${_os}-${_arch}" in
         linux-x86_64)    echo "linux-x86_64" ;;
         linux-arm64)     echo "linux-aarch64" ;;
-        darwin-x86_64)   echo "darwin-x86_64" ;;
         darwin-arm64)    echo "darwin-arm64" ;;
-        windows-x86_64)  echo "windows-x86_64" ;;
-        *)               err "No prebuilt binary for %s %s" "$_os" "$_arch" ;;
+        *)               err "No prebuilt binary for %s %s. Only Linux (x86_64, arm64) and macOS (arm64) are supported." "$_os" "$_arch" ;;
     esac
 }
 
@@ -262,8 +255,8 @@ check_existing_install() {
 }
 
 install_binary() {
-    local _src="$1" _install_dir="$2" _exe_suffix="${3:-}"
-    local _dest="${_install_dir}/${BINARY_NAME}${_exe_suffix}"
+    local _src="$1" _install_dir="$2"
+    local _dest="${_install_dir}/${BINARY_NAME}"
 
     chmod +x "$_src"
     mkdir -p "$_install_dir"
