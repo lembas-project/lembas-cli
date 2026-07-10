@@ -88,15 +88,14 @@ async fn ensure_runtime() -> miette::Result<PathBuf> {
     Ok(prefix)
 }
 
-/// Run `python -m lembas` with the given arguments in the runtime environment.
+/// Run the lembas entry point with the given arguments in the runtime environment.
 pub async fn run_lembas(args: &[String]) -> miette::Result<i32> {
     let prefix = ensure_runtime().await?;
     let env_vars = install::activation_env(&prefix)?;
-    let python = prefix.join("bin").join("python");
+    let lembas_bin = prefix.join("bin").join("lembas");
 
-    let status = std::process::Command::new(&python)
+    let status = std::process::Command::new(&lembas_bin)
         .envs(&env_vars)
-        .args(["-m", "lembas"])
         .args(args)
         .status()
         .into_diagnostic()
