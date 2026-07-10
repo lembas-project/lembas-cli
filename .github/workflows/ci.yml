@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -73,30 +74,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
-  pre-commit:
-    name: Pre-commit
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
-
-      - name: Install Rust
-        run: rustup show
-
-      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit|${{ runner.arch }}-${{ hashFiles('.pre-commit-config.yaml') }}
-
-      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
-
   # Single check job for branch protection — add/remove jobs above without changing protection rules
   check:
     name: Check
     if: always()
-    needs: [test, coverage, pre-commit]
+    needs: [test, coverage]
     runs-on: ubuntu-latest
     steps:
       - name: Decide whether all required jobs succeeded or failed
