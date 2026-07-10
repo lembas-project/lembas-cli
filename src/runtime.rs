@@ -47,12 +47,13 @@ fn write_hash(prefix: &Path, hash: &str) -> miette::Result<()> {
 fn version_from_lock(lock_content: &str, package_name: &str) -> miette::Result<String> {
     for line in lock_content.lines() {
         let line = line.trim();
-        if line.starts_with("- conda:") && line.contains(&format!("/{}-", package_name)) {
-            if let Some(filename) = line.rsplit('/').next() {
-                let parts: Vec<&str> = filename.split('-').collect();
-                if parts.len() >= 2 {
-                    return Ok(parts[1].to_string());
-                }
+        if line.starts_with("- conda:")
+            && line.contains(&format!("/{}-", package_name))
+            && let Some(filename) = line.rsplit('/').next()
+        {
+            let parts: Vec<&str> = filename.split('-').collect();
+            if parts.len() >= 2 {
+                return Ok(parts[1].to_string());
             }
         }
     }

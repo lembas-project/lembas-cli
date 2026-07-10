@@ -2,8 +2,6 @@
 
 use std::path::PathBuf;
 
-use dirs;
-
 /// Get the lembas home directory (~/.lembas).
 fn lembas_home() -> PathBuf {
     dirs::home_dir()

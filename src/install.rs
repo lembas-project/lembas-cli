@@ -10,12 +10,10 @@ use rattler::{
     install::{IndicatifReporter, Installer},
     package_cache::PackageCache,
 };
-use rattler_cache;
 use rattler_conda_types::{Platform, PrefixRecord};
 use rattler_lock::LockFile;
 use rattler_shell::activation::{ActivationVariables, Activator, PathModificationBehavior};
 use rattler_shell::shell::ShellEnum;
-use reqwest;
 
 /// Install packages from a lockfile string to a prefix.
 pub async fn install_from_lockfile(lock_content: &str, prefix: &Path) -> miette::Result<()> {

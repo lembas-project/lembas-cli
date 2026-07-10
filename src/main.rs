@@ -7,9 +7,6 @@
 use std::env;
 use std::process::ExitCode;
 
-use tracing;
-use tracing_subscriber;
-
 mod install;
 mod paths;
 mod runtime;
