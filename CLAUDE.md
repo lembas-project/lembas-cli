@@ -37,9 +37,11 @@ Use `tracing` macros, never `println!`/`eprintln!`. The crate enforces this with
 
 Log levels:
 - `tracing::error!` — fatal errors before exit
-- `tracing::warn!` — user-facing status (always visible: "Installing...", "Updating...")
-- `tracing::info!` — diagnostic details (package counts, timing)
+- `tracing::warn!` — unexpected but recoverable issues
+- `tracing::info!` — user-facing status ("Installing...", package counts, timing)
 - `tracing::debug!` — verbose troubleshooting (controlled via `RUST_LOG`)
+
+Default output is minimal (no timestamp, no level prefix, no target) for clean CLI UX.
 
 ### Module organization
 
