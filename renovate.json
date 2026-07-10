@@ -14,8 +14,8 @@
       "matchManagers": [
         "cargo"
       ],
-      "matchPackagePatterns": [
-        "^rattler"
+      "matchPackageNames": [
+        "/^rattler/"
       ]
     }
   ]
