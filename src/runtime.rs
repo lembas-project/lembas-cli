@@ -104,3 +104,97 @@ pub async fn run_lembas(args: &[String]) -> miette::Result<i32> {
 
     Ok(status.code().unwrap_or(1))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    #[test]
+    fn test_lock_sha256_deterministic() {
+        let content = "hello world";
+        let hash1 = lock_sha256(content);
+        let hash2 = lock_sha256(content);
+        assert_eq!(hash1, hash2);
+    }
+
+    #[test]
+    fn test_lock_sha256_known_value() {
+        let hash = lock_sha256("hello world");
+        assert_eq!(
+            hash,
+            "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+        );
+    }
+
+    #[test]
+    fn test_lock_sha256_different_content() {
+        let hash1 = lock_sha256("content a");
+        let hash2 = lock_sha256("content b");
+        assert_ne!(hash1, hash2);
+    }
+
+    #[test]
+    fn test_version_from_lock_finds_package() {
+        let lockfile = r#"
+packages:
+  - conda: https://conda.anaconda.org/conda-forge/noarch/lembas-0.3.1-pyhd8ed1ab_0.conda
+  - conda: https://conda.anaconda.org/conda-forge/noarch/python-3.11.0-h12345.conda
+"#;
+        let version = version_from_lock(lockfile, "lembas").unwrap();
+        assert_eq!(version, "0.3.1");
+    }
+
+    #[test]
+    fn test_version_from_lock_not_found() {
+        let lockfile = r#"
+packages:
+  - conda: https://conda.anaconda.org/conda-forge/noarch/other-1.0.0-pyhd8ed1ab_0.conda
+"#;
+        let result = version_from_lock(lockfile, "lembas");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_is_installed_false_when_missing() {
+        let dir = TempDir::new().unwrap();
+        assert!(!is_installed(dir.path()));
+    }
+
+    #[test]
+    fn test_is_installed_true_when_conda_meta_exists() {
+        let dir = TempDir::new().unwrap();
+        std::fs::create_dir(dir.path().join("conda-meta")).unwrap();
+        assert!(is_installed(dir.path()));
+    }
+
+    #[test]
+    fn test_hash_matches_false_when_no_file() {
+        let dir = TempDir::new().unwrap();
+        let result = hash_matches(dir.path(), "somehash").unwrap();
+        assert!(!result);
+    }
+
+    #[test]
+    fn test_hash_matches_true_when_same() {
+        let dir = TempDir::new().unwrap();
+        let hash = "abc123";
+        write_hash(dir.path(), hash).unwrap();
+        assert!(hash_matches(dir.path(), hash).unwrap());
+    }
+
+    #[test]
+    fn test_hash_matches_false_when_different() {
+        let dir = TempDir::new().unwrap();
+        write_hash(dir.path(), "hash1").unwrap();
+        assert!(!hash_matches(dir.path(), "hash2").unwrap());
+    }
+
+    #[test]
+    fn test_write_hash_creates_file() {
+        let dir = TempDir::new().unwrap();
+        write_hash(dir.path(), "myhash").unwrap();
+        let content = std::fs::read_to_string(dir.path().join(HASH_FILE)).unwrap();
+        assert_eq!(content, "myhash");
+    }
+}
