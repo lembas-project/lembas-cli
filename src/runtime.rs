@@ -43,26 +43,6 @@ fn write_hash(prefix: &Path, hash: &str) -> miette::Result<()> {
     Ok(())
 }
 
-/// Extract version from lockfile for a package.
-fn version_from_lock(lock_content: &str, package_name: &str) -> miette::Result<String> {
-    for line in lock_content.lines() {
-        let line = line.trim();
-        if line.starts_with("- conda:")
-            && line.contains(&format!("/{}-", package_name))
-            && let Some(filename) = line.rsplit('/').next()
-        {
-            let parts: Vec<&str> = filename.split('-').collect();
-            if parts.len() >= 2 {
-                return Ok(parts[1].to_string());
-            }
-        }
-    }
-    Err(miette::miette!(
-        "could not find {} version in lockfile",
-        package_name
-    ))
-}
-
 /// Ensure the lembas runtime is installed and up-to-date.
 async fn ensure_runtime() -> miette::Result<PathBuf> {
     let prefix = paths::runtime_prefix();
@@ -81,8 +61,11 @@ async fn ensure_runtime() -> miette::Result<PathBuf> {
     if needs_install {
         install::install_from_lockfile(LOCKFILE, &prefix).await?;
         write_hash(&prefix, &current_hash)?;
-        let version = version_from_lock(LOCKFILE, "lembas")?;
-        tracing::info!("Installed lembas v{} to {}", version, prefix.display());
+        tracing::info!(
+            "Installed lembas v{} to {}",
+            env!("CARGO_PKG_VERSION"),
+            prefix.display()
+        );
     }
 
     Ok(prefix)
@@ -131,27 +114,6 @@ mod tests {
         let hash1 = lock_sha256("content a");
         let hash2 = lock_sha256("content b");
         assert_ne!(hash1, hash2);
-    }
-
-    #[test]
-    fn test_version_from_lock_finds_package() {
-        let lockfile = r#"
-packages:
-  - conda: https://conda.anaconda.org/conda-forge/noarch/lembas-0.3.1-pyhd8ed1ab_0.conda
-  - conda: https://conda.anaconda.org/conda-forge/noarch/python-3.11.0-h12345.conda
-"#;
-        let version = version_from_lock(lockfile, "lembas").unwrap();
-        assert_eq!(version, "0.3.1");
-    }
-
-    #[test]
-    fn test_version_from_lock_not_found() {
-        let lockfile = r#"
-packages:
-  - conda: https://conda.anaconda.org/conda-forge/noarch/other-1.0.0-pyhd8ed1ab_0.conda
-"#;
-        let result = version_from_lock(lockfile, "lembas");
-        assert!(result.is_err());
     }
 
     #[test]
