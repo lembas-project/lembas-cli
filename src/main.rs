@@ -13,6 +13,11 @@ mod install;
 mod paths;
 mod runtime;
 
+/// Get CLI version from build-time git describe (like setuptools-scm).
+fn cli_version() -> &'static str {
+    env!("LEMBAS_CLI_VERSION")
+}
+
 #[tokio::main]
 async fn main() -> ExitCode {
     // Initialize logging (INFO by default, overridable via RUST_LOG)
@@ -33,7 +38,7 @@ async fn main() -> ExitCode {
     // Handle --version locally (fast, no bootstrap needed)
     if args.first().map(|s| s.as_str()) == Some("--version") {
         let lembas_ver = runtime::lembas_version().unwrap_or_else(|| "unknown".to_string());
-        let cli_ver = env!("CARGO_PKG_VERSION");
+        let cli_ver = cli_version();
         tracing::info!("lembas {} (cli build {})", lembas_ver, cli_ver);
         return ExitCode::SUCCESS;
     }

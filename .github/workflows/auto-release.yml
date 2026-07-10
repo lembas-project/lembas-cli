@@ -29,36 +29,48 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-          persist-credentials: true  # Needed to push version bump
+          persist-credentials: false
 
-      - name: Get current version from Cargo.toml
-        id: current
+      - name: Get latest tag version
+        id: latest
         run: |
-          version=$(grep '^version = ' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          # Get latest tag, default to v0.0.0 if none
+          latest=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "v0.0.0")
+          echo "tag=$latest" >> "$GITHUB_OUTPUT"
+          echo "version=${latest#v}" >> "$GITHUB_OUTPUT"
 
       - name: Calculate next version
         id: next
         env:
-          CURRENT: ${{ steps.current.outputs.version }}
+          LATEST: ${{ steps.latest.outputs.version }}
           BUMP: ${{ github.event.inputs.bump || 'patch' }}
         run: |
-          # Current format: YYYY.M.PATCH
+          # CalVer format: YYYY.M.PATCH
           year=$(date +%Y)
           month=$(date +%-m)
 
-          # Parse current version
-          current_year=$(echo "$CURRENT" | cut -d. -f1)
-          current_month=$(echo "$CURRENT" | cut -d. -f2)
-          current_patch=$(echo "$CURRENT" | cut -d. -f3)
+          # Parse latest version (might be old semver or calver)
+          latest_major=$(echo "$LATEST" | cut -d. -f1)
+
+          # If latest looks like CalVer (year >= 2024), parse it
+          if [ "$latest_major" -ge 2024 ]; then
+            latest_year=$latest_major
+            latest_month=$(echo "$LATEST" | cut -d. -f2)
+            latest_patch=$(echo "$LATEST" | cut -d. -f3)
+          else
+            # Old semver tag, start fresh with CalVer
+            latest_year=0
+            latest_month=0
+            latest_patch=-1
+          fi
 
           # Calculate next version
-          if [ "$year" != "$current_year" ] || [ "$month" != "$current_month" ] || [ "$BUMP" = "minor" ]; then
+          if [ "$year" != "$latest_year" ] || [ "$month" != "$latest_month" ] || [ "$BUMP" = "minor" ]; then
             # New month or manual minor bump -> reset patch
             next="${year}.${month}.0"
           else
             # Same month -> increment patch
-            next_patch=$((current_patch + 1))
+            next_patch=$((latest_patch + 1))
             next="${year}.${month}.${next_patch}"
           fi
 
@@ -77,14 +89,6 @@ jobs:
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Update Cargo.toml version
-        if: steps.check.outputs.exists == 'false'
-        env:
-          VERSION: ${{ steps.next.outputs.version }}
-        run: |
-          sed -i "s/^version = .*/version = \"$VERSION\"/" Cargo.toml
-          cargo check  # Update Cargo.lock
-
       - name: Extract lembas version from lockfile
         if: steps.check.outputs.exists == 'false'
         id: lembas
@@ -92,30 +96,19 @@ jobs:
           version=$(grep -oP '(?<=/lembas-)[0-9.]+(?=-)' locks/pixi.lock | head -1)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Commit version bump
-        if: steps.check.outputs.exists == 'false'
-        env:
-          VERSION: ${{ steps.next.outputs.version }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Cargo.toml Cargo.lock
-          git commit -m "chore: Bump version to $VERSION" || echo "No changes to commit"
-          git push
-
-      - name: Create release
+      - name: Create draft release
         if: steps.check.outputs.exists == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.next.outputs.version }}
           LEMBAS_VERSION: ${{ steps.lembas.outputs.version }}
+          PREV_TAG: ${{ steps.latest.outputs.tag }}
         run: |
+          # Generate notes body
+          body="Bundles lembas $LEMBAS_VERSION"
+
           gh release create "v$VERSION" \
             --title "v$VERSION" \
             --generate-notes \
-            --notes-start-tag "$(git describe --tags --abbrev=0 2>/dev/null || echo '')" \
             --draft \
-            --notes "Bundles lembas $LEMBAS_VERSION
-
-          ## What's Changed
-          $(gh api repos/${{ github.repository }}/releases/generate-notes -f tag_name="v$VERSION" --jq '.body' 2>/dev/null || echo 'See commits for changes.')"
+            --notes "$body"
