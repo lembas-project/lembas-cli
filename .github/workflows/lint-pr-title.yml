@@ -1,0 +1,44 @@
+name: Validate PR title
+
+on:
+  pull_request:
+    types:
+    - opened
+    - edited
+    - reopened
+    - synchronize
+
+permissions:
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    steps:
+    - name: Validate PR Title
+      uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155571e35 # v5.5.3
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        types: |
+          feat
+          fix
+          chore
+          refactor
+          docs
+          test
+          build
+          ci
+          revert
+        requireScope: false
+        subjectPattern: ^[A-Z].*$
+        subjectPatternError: |
+          The subject "{subject}" found in the pull request title "{title}" does not match the configured pattern.
+          Please ensure the subject begins with an uppercase letter.
+        ignoreLabels: |
+          ignore-semantic-pull-request
