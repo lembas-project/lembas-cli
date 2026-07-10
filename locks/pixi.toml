@@ -1,0 +1,12 @@
+# This pixi.toml defines the embedded lembas runtime.
+# Run `make lock` to regenerate locks/pixi.lock after changes.
+
+[workspace]
+name = "lembas-runtime"
+channels = ["conda-forge", "lembas-project"]
+platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
+
+[dependencies]
+python = ">=3.11"
+lembas = "==0.3.1"  # Keep in sync with Cargo.toml version
+pixi = "*"

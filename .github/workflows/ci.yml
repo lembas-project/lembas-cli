@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -72,3 +73,15 @@ jobs:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+
+  # Single check job for branch protection — add/remove jobs above without changing protection rules
+  check:
+    name: Check
+    if: always()
+    needs: [test, coverage]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether all required jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2
+        with:
+          jobs: ${{ toJSON(needs) }}
