@@ -2,6 +2,8 @@
 
 Self-bootstrapping Rust CLI that embeds a conda lockfile and delegates to `python -m lembas`.
 
+> **Note for Claude**: Keep this file updated as we develop. Add notes about maintenance procedures, release processes, design patterns, and architectural decisions here so future sessions have full context.
+
 ## Build & Test
 
 ```bash
