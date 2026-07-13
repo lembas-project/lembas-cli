@@ -2,6 +2,8 @@
 
 Self-bootstrapping Rust CLI that embeds a conda lockfile and delegates to `python -m lembas`.
 
+> **Note for Claude**: Keep this file updated as we develop. Add notes about maintenance procedures, release processes, design patterns, and architectural decisions here so future sessions have full context.
+
 ## Build & Test
 
 ```bash
@@ -80,4 +82,24 @@ Unit tests live in `#[cfg(test)] mod tests` at bottom of each module. Test pure 
 `locks/pixi.lock` is embedded at compile time via `include_str!`. Update with:
 ```bash
 make lock   # or: pixi lock --manifest-path locks/pixi.toml
+```
+
+## Releasing
+
+CLI uses CalVer (`YYYY.M.PATCH`). Version is derived from git tags via `build.rs` (like setuptools-scm):
+- On tag `v2026.7.0` → `2026.7.0`
+- 5 commits after tag → `2026.7.0.dev5+g1234567`
+
+To cut a release:
+```bash
+# Create draft release with auto-generated notes
+gh release create v2026.7.1 --generate-notes --draft
+
+# Review in GitHub UI, then publish
+# release.yml automatically builds binaries and uploads to the release
+```
+
+The `--version` output shows both lembas-core version and CLI build:
+```
+lembas 0.3.1 (cli build 2026.7.0)
 ```
