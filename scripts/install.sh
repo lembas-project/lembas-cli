@@ -108,7 +108,7 @@ main() {
 
     info "Installing lembas %s for %s %s" "$_version" "$_os" "$_arch"
 
-    local _dest="${_install_dir}/${BINARY_NAME}${_exe_suffix}"
+    local _dest="${_install_dir}/${BINARY_NAME}"
     check_existing_install "$_dest"
 
     info "Downloading %s" "$_url"
