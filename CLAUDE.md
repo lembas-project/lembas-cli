@@ -28,6 +28,13 @@ The CLI:
 
 ## Code Style
 
+### Branch naming
+
+Use `<type>/<subject>` format to align with conventional commits:
+- `feat/calver-versioning`
+- `fix/install-script`
+- `chore/update-deps`
+
 ### Logging
 
 Use `tracing` macros, never `println!`/`eprintln!`. The crate enforces this with:
