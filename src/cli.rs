@@ -37,24 +37,51 @@ pub enum Commands {
 #[derive(Subcommand)]
 pub enum SelfSubcommands {
     /// Update the lembas CLI to the latest version
-    Update {
-        /// Version to install (e.g., v2026.7.1)
-        version: Option<String>,
+    Update(UpdateArgs),
+}
 
-        /// Check if an update is available
-        #[arg(long, conflicts_with_all = ["list", "version", "force"])]
-        check: bool,
+#[derive(Parser)]
+#[command(args_conflicts_with_subcommands = true)]
+pub struct UpdateArgs {
+    #[command(subcommand)]
+    pub action: Option<UpdateAction>,
 
-        /// List available versions
-        #[arg(long, conflicts_with_all = ["check", "version", "force"])]
-        list: bool,
+    /// Version to install (e.g., v2026.7.1)
+    pub version: Option<String>,
 
-        /// Force reinstall even if already on target version
-        #[arg(long, conflicts_with_all = ["check", "list"])]
-        force: bool,
+    /// Force reinstall even if already on target version
+    #[arg(long)]
+    pub force: bool,
 
-        /// Print help
-        #[arg(short, long)]
-        help: bool,
-    },
+    /// Print help
+    #[arg(short, long)]
+    pub help: bool,
+}
+
+#[derive(Subcommand)]
+pub enum UpdateAction {
+    /// Check if an update is available
+    Check,
+    /// List available versions
+    List,
+}
+
+impl UpdateArgs {
+    pub fn print_help() {
+        tracing::info!("Update the lembas CLI to the latest version");
+        tracing::info!("");
+        tracing::info!("Usage: lembas self update [OPTIONS] [VERSION]");
+        tracing::info!("       lembas self update <COMMAND>");
+        tracing::info!("");
+        tracing::info!("Commands:");
+        tracing::info!("  check  Check if an update is available");
+        tracing::info!("  list   List available versions");
+        tracing::info!("");
+        tracing::info!("Arguments:");
+        tracing::info!("  [VERSION]  Version to install (e.g., v2026.7.1)");
+        tracing::info!("");
+        tracing::info!("Options:");
+        tracing::info!("      --force  Force reinstall even if already on target version");
+        tracing::info!("  -h, --help   Print help");
+    }
 }

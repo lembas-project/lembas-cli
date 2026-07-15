@@ -16,7 +16,7 @@ mod paths;
 mod runtime;
 mod update;
 
-use cli::{Cli, Commands, SelfSubcommands};
+use cli::{Cli, Commands, SelfSubcommands, UpdateAction, UpdateArgs};
 
 /// Get CLI version from build-time git describe (like setuptools-scm).
 fn cli_version() -> &'static str {
@@ -76,117 +76,104 @@ async fn run_python_lembas(args: &[String]) -> ExitCode {
 
 async fn handle_self_command(command: SelfSubcommands) -> ExitCode {
     match command {
-        SelfSubcommands::Update {
-            version,
-            check,
-            list,
-            force,
-            help,
-        } => {
-            if help {
-                tracing::info!("Update the lembas CLI to the latest version");
-                tracing::info!("");
-                tracing::info!("Usage: lembas self update [OPTIONS] [VERSION]");
-                tracing::info!("");
-                tracing::info!("Arguments:");
-                tracing::info!("  [VERSION]  Version to install (e.g., v2026.7.1)");
-                tracing::info!("");
-                tracing::info!("Options:");
-                tracing::info!("      --check  Check if an update is available");
-                tracing::info!("      --list   List available versions");
-                tracing::info!("      --force  Force reinstall even if already on target version");
-                tracing::info!("  -h, --help   Print help");
-                return ExitCode::SUCCESS;
+        SelfSubcommands::Update(args) => handle_self_update(args).await,
+    }
+}
+
+async fn handle_self_update(args: UpdateArgs) -> ExitCode {
+    if args.help {
+        UpdateArgs::print_help();
+        return ExitCode::SUCCESS;
+    }
+
+    let client = reqwest::Client::new();
+
+    match args.action {
+        Some(UpdateAction::List) => list_versions(&client).await,
+        Some(UpdateAction::Check) => check_for_update(&client).await,
+        None => perform_update(&client, args.version, args.force).await,
+    }
+}
+
+async fn list_versions(client: &reqwest::Client) -> ExitCode {
+    match update::list_versions(client).await {
+        Ok(releases) => {
+            let current = update::current_version_string();
+            tracing::info!("Available versions:");
+            for r in releases.iter().take(10) {
+                let marker = if r.version.to_string() == current {
+                    " (installed)"
+                } else {
+                    ""
+                };
+                tracing::info!("  v{}{}", r.version, marker);
             }
-            handle_self_update(version, check, list, force).await
+            if releases.len() > 10 {
+                tracing::info!("  ... and {} more", releases.len() - 10);
+            }
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            tracing::error!("{e:?}");
+            ExitCode::FAILURE
         }
     }
 }
 
-async fn handle_self_update(
+async fn check_for_update(client: &reqwest::Client) -> ExitCode {
+    match update::check_for_update(client).await {
+        Ok(update::UpdateCheck::Available(release)) => {
+            tracing::info!(
+                "Update available: v{} -> v{}",
+                update::current_version_string(),
+                release.version
+            );
+            tracing::info!("Run `lembas self update` to install");
+            ExitCode::SUCCESS
+        }
+        Ok(update::UpdateCheck::AlreadyUpToDate) => {
+            tracing::info!("Already up to date (v{})", update::current_version_string());
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            tracing::error!("{e:?}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+async fn perform_update(
+    client: &reqwest::Client,
     version: Option<String>,
-    check: bool,
-    list: bool,
     force: bool,
 ) -> ExitCode {
-    let client = reqwest::Client::new();
-
-    if list {
-        match update::list_versions(&client).await {
-            Ok(releases) => {
-                let current = update::current_version_string();
-                tracing::info!("Available versions:");
-                for r in releases.iter().take(10) {
-                    let marker = if r.version.to_string() == current {
-                        " (installed)"
-                    } else {
-                        ""
-                    };
-                    tracing::info!("  v{}{}", r.version, marker);
-                }
-                if releases.len() > 10 {
-                    tracing::info!("  ... and {} more", releases.len() - 10);
-                }
-                ExitCode::SUCCESS
-            }
+    let release = if let Some(v) = version {
+        match update::find_version(client, &v).await {
+            Ok(r) => r,
             Err(e) => {
                 tracing::error!("{e:?}");
-                ExitCode::FAILURE
-            }
-        }
-    } else if check {
-        match update::check_for_update(&client).await {
-            Ok(update::UpdateCheck::Available(release)) => {
-                tracing::info!(
-                    "Update available: v{} -> v{}",
-                    update::current_version_string(),
-                    release.version
-                );
-                tracing::info!("Run `lembas self update` to install");
-                ExitCode::SUCCESS
-            }
-            Ok(update::UpdateCheck::AlreadyUpToDate) => {
-                tracing::info!("Already up to date (v{})", update::current_version_string());
-                ExitCode::SUCCESS
-            }
-            Err(e) => {
-                tracing::error!("{e:?}");
-                ExitCode::FAILURE
-            }
-        }
-    } else if let Some(version) = version {
-        match update::find_version(&client, &version).await {
-            Ok(release) => match update::perform_update(&client, &release, force).await {
-                Ok(()) => ExitCode::SUCCESS,
-                Err(e) => {
-                    tracing::error!("{e:?}");
-                    ExitCode::FAILURE
-                }
-            },
-            Err(e) => {
-                tracing::error!("{e:?}");
-                ExitCode::FAILURE
+                return ExitCode::FAILURE;
             }
         }
     } else {
-        match update::check_for_update(&client).await {
-            Ok(update::UpdateCheck::Available(release)) => {
-                match update::perform_update(&client, &release, force).await {
-                    Ok(()) => ExitCode::SUCCESS,
-                    Err(e) => {
-                        tracing::error!("{e:?}");
-                        ExitCode::FAILURE
-                    }
-                }
-            }
+        match update::check_for_update(client).await {
+            Ok(update::UpdateCheck::Available(r)) => r,
             Ok(update::UpdateCheck::AlreadyUpToDate) => {
                 tracing::info!("Already up to date (v{})", update::current_version_string());
-                ExitCode::SUCCESS
+                return ExitCode::SUCCESS;
             }
             Err(e) => {
                 tracing::error!("{e:?}");
-                ExitCode::FAILURE
+                return ExitCode::FAILURE;
             }
+        }
+    };
+
+    match update::perform_update(client, &release, force).await {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            tracing::error!("{e:?}");
+            ExitCode::FAILURE
         }
     }
 }
