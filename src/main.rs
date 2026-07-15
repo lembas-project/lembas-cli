@@ -9,10 +9,15 @@
 use std::env;
 use std::process::ExitCode;
 
+use clap::Parser;
+
+mod cli;
 mod install;
 mod paths;
 mod runtime;
 mod update;
+
+use cli::{Cli, SelfCommands, SelfSubcommands};
 
 /// Get CLI version from build-time git describe (like setuptools-scm).
 fn cli_version() -> &'static str {
@@ -44,9 +49,26 @@ async fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
 
-    // Handle `self update` locally (no bootstrap needed)
+    // Handle `self` commands via clap (no bootstrap needed)
     if args.first().map(|s| s.as_str()) == Some("self") {
-        return handle_self_command(&args[1..]).await;
+        // Re-parse with clap for the self command
+        let cli = match Cli::try_parse() {
+            Ok(cli) => cli,
+            Err(e) => {
+                e.print().ok();
+                return if e.kind() == clap::error::ErrorKind::DisplayHelp
+                    || e.kind() == clap::error::ErrorKind::DisplayVersion
+                {
+                    ExitCode::SUCCESS
+                } else {
+                    ExitCode::FAILURE
+                };
+            }
+        };
+
+        return match cli.command {
+            SelfCommands::SelfCmd { command } => handle_self_command(command).await,
+        };
     }
 
     // Delegate to the managed lembas Python runtime
@@ -67,38 +89,26 @@ async fn main() -> ExitCode {
     result
 }
 
-async fn handle_self_command(args: &[String]) -> ExitCode {
-    let subcommand = args.first().map(|s| s.as_str());
-
-    match subcommand {
-        Some("update") => handle_self_update(&args[1..]).await,
-        Some(other) => {
-            tracing::error!("Unknown self command: {}", other);
-            tracing::info!("Available: self update");
-            ExitCode::FAILURE
-        }
-        None => {
-            tracing::info!("Usage: lembas self <command>");
-            tracing::info!("Commands:");
-            tracing::info!("  update    Update the lembas CLI to the latest version");
-            ExitCode::SUCCESS
-        }
+async fn handle_self_command(command: SelfSubcommands) -> ExitCode {
+    match command {
+        SelfSubcommands::Update {
+            version,
+            check,
+            list,
+            force,
+        } => handle_self_update(version, check, list, force).await,
     }
 }
 
-async fn handle_self_update(args: &[String]) -> ExitCode {
+async fn handle_self_update(
+    version: Option<String>,
+    check: bool,
+    list: bool,
+    force: bool,
+) -> ExitCode {
     let client = reqwest::Client::new();
 
-    // Parse flags
-    let check_only = args.iter().any(|a| a == "--check");
-    let list_only = args.iter().any(|a| a == "--list");
-    let force = args.iter().any(|a| a == "--force");
-    let version_arg: Option<&str> = args
-        .iter()
-        .find(|a| !a.starts_with('-'))
-        .map(|s| s.as_str());
-
-    if list_only {
+    if list {
         match update::list_versions(&client).await {
             Ok(releases) => {
                 let current = update::current_version_string();
@@ -121,7 +131,7 @@ async fn handle_self_update(args: &[String]) -> ExitCode {
                 ExitCode::FAILURE
             }
         }
-    } else if check_only {
+    } else if check {
         match update::check_for_update(&client).await {
             Ok(update::UpdateCheck::Available(release)) => {
                 tracing::info!(
@@ -141,9 +151,8 @@ async fn handle_self_update(args: &[String]) -> ExitCode {
                 ExitCode::FAILURE
             }
         }
-    } else if let Some(version) = version_arg {
-        // Update to specific version
-        match update::find_version(&client, version).await {
+    } else if let Some(version) = version {
+        match update::find_version(&client, &version).await {
             Ok(release) => match update::perform_update(&client, &release, force).await {
                 Ok(()) => ExitCode::SUCCESS,
                 Err(e) => {
@@ -157,7 +166,6 @@ async fn handle_self_update(args: &[String]) -> ExitCode {
             }
         }
     } else {
-        // Update to latest
         match update::check_for_update(&client).await {
             Ok(update::UpdateCheck::Available(release)) => {
                 match update::perform_update(&client, &release, force).await {
