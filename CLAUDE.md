@@ -59,6 +59,7 @@ Flat structure in `src/`:
 - `runtime.rs` — ensure runtime installed, run lembas
 - `install.rs` — rattler-based package installation
 - `paths.rs` — path helpers (~/.lembas/runtime)
+- `update.rs` — self-update mechanism via GitHub releases
 
 ### Testing
 
@@ -69,6 +70,8 @@ Unit tests live in `#[cfg(test)] mod tests` at bottom of each module. Test pure 
 - `rattler*` crates for conda operations (keep versions aligned)
 - `miette` for error handling
 - `tracing` + `tracing-subscriber` for logging
+- `self-replace` for atomic binary replacement during updates
+- `semver` for version parsing and comparison
 - `tempfile` (dev) for test fixtures
 
 ## CI
@@ -103,3 +106,17 @@ The `--version` output shows both lembas-core version and CLI build:
 ```
 lembas 0.3.1 (cli build 2026.7.0)
 ```
+
+## Self-Update
+
+Users can update the CLI binary in-place:
+
+```bash
+lembas self update          # update to latest version
+lembas self update v2026.7.1  # update to specific version
+lembas self update --check  # check if update available
+lembas self update --list   # list available versions
+lembas self update --force  # force reinstall current version
+```
+
+Implementation uses `self-replace` crate for atomic binary replacement. Downloads pre-built binaries from GitHub releases matching the current platform (darwin-arm64, darwin-x86_64, linux-x86_64, linux-aarch64).
