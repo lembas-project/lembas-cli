@@ -1,9 +1,25 @@
 version: 7
 platforms:
 - name: linux-64
+  virtual-packages:
+  - __unix=0=0
+  - __linux=4.18
+  - __glibc=2.28
+  - __archspec=0=x86_64
 - name: osx-64
+  virtual-packages:
+  - __unix=0=0
+  - __osx=13.0
+  - __archspec=0=x86_64
 - name: osx-arm64
+  virtual-packages:
+  - __unix=0=0
+  - __osx=13.0
+  - __archspec=0=m1
 - name: win-64
+  virtual-packages:
+  - __win=10.0
+  - __archspec=0=x86_64
 environments:
   default:
     channels:
@@ -26,7 +42,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.2-h25fd6f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ncurses-6.6-hdb14827_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/openssl-3.6.3-h35e630c_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/pixi-0.72.1-ha759004_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/pixi-0.72.2-ha759004_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pydantic-core-2.46.4-py314h2e6c369_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/python-3.14.6-habeac84_100_cp314.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.3-py314h67df5f8_1.conda
@@ -89,7 +105,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libzlib-1.3.2-hbb4bfdb_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/ncurses-6.6-hcc0dc9a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/openssl-3.6.3-hc881268_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/pixi-0.72.1-hcb3c93d_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/pixi-0.72.2-hcb3c93d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pydantic-core-2.46.4-py314h8916c15_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/python-3.14.6-h7c6738f_100_cp314.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/pyyaml-6.0.3-py314h10d0514_1.conda
@@ -130,7 +146,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libzlib-1.3.2-h8088a28_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ncurses-6.6-h1d4f5a5_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.6.3-hd24854e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pixi-0.72.1-h2307240_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pixi-0.72.2-h2307240_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pydantic-core-2.46.4-py314h54f3292_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/python-3.14.6-h156bc91_100_cp314.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pyyaml-6.0.3-py314h6e9b3f0_1.conda
@@ -170,7 +186,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/libsqlite-3.53.3-hf5d6505_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/libzlib-1.3.2-hfd05255_2.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/openssl-3.6.3-hf411b9b_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/win-64/pixi-0.72.1-he94b42d_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/win-64/pixi-0.72.2-he94b42d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/pydantic-core-2.46.4-py314h9f07db2_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/python-3.14.6-h4b44e0e_100_cp314.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/pyyaml-6.0.3-py314h2359020_1.conda
@@ -381,20 +397,21 @@ packages:
     - openssl >=3.6.3,<4.0a0
   size: 3159683
   timestamp: 1781069855778
-- conda: https://conda.anaconda.org/conda-forge/linux-64/pixi-0.72.1-ha759004_0.conda
-  sha256: 4827990abcc46f412eaa1652b89da5a67bbb2d15ca01e5fb7845043ba1eae8b1
-  md5: 8db53a303cefaa35089f9c7414de54fb
+- conda: https://conda.anaconda.org/conda-forge/linux-64/pixi-0.72.2-ha759004_0.conda
+  sha256: a118db7544e7798b4d17ea9ce15526d8484bd94a88833a83ee155a799ec8b391
+  md5: 99d09e0770a125141899f627e5960abb
   depends:
-  - libgcc >=14
   - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
   - libstdcxx >=14
   - openssl >=3.5.7,<4.0a0
   constrains:
   - __glibc >=2.17
   license: BSD-3-Clause
+  license_family: BSD
   run_exports: {}
-  size: 32838641
-  timestamp: 1783432218809
+  size: 32876072
+  timestamp: 1783617764114
 - conda: https://conda.anaconda.org/conda-forge/linux-64/pydantic-core-2.46.4-py314h2e6c369_0.conda
   sha256: 802e216c39f1359aed60823b6e11d8ccd812b0ae1c81ae5ac1c81f99446409ab
   md5: 0c96993dbeadf3a277cf757b9f1c9412
@@ -914,18 +931,19 @@ packages:
     - openssl >=3.6.3,<4.0a0
   size: 2775300
   timestamp: 1781071391999
-- conda: https://conda.anaconda.org/conda-forge/osx-64/pixi-0.72.1-hcb3c93d_0.conda
-  sha256: 24e41508c0226858cca22cec7733009f2a7e079e8c88724787d03fe7e5b03e6f
-  md5: d2be20c5067df812a5af155d4a486988
+- conda: https://conda.anaconda.org/conda-forge/osx-64/pixi-0.72.2-hcb3c93d_0.conda
+  sha256: 0be5103be795fbd1556b17a88052b623b502187e3e376fbd754476c7ab9d9051
+  md5: 68b4fb92c63689ed5d40aafda3112c26
   depends:
-  - __osx >=11.0
   - libcxx >=19
+  - __osx >=11.0
   constrains:
   - __osx >=11.0
   license: BSD-3-Clause
+  license_family: BSD
   run_exports: {}
-  size: 31006024
-  timestamp: 1783432241231
+  size: 31250132
+  timestamp: 1783617778880
 - conda: https://conda.anaconda.org/conda-forge/osx-64/pydantic-core-2.46.4-py314h8916c15_0.conda
   sha256: 555021648575077c62d429feb4530c724915af6f92e3d77f2accb4789c071778
   md5: a98f01ef277ca30e27a29bda4168b158
@@ -1153,18 +1171,19 @@ packages:
     - openssl >=3.6.3,<4.0a0
   size: 3102584
   timestamp: 1781069820667
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/pixi-0.72.1-h2307240_0.conda
-  sha256: dcef83bcbbb6e48cdcde32809582b3cf9f69e385481491bd48c4dce683d16155
-  md5: e557b36c22bb9ec069235e753b463d59
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/pixi-0.72.2-h2307240_0.conda
+  sha256: 2bb3ef228a3a2e30c11355c09143aacb299b716d4f32f3095679945ea1c58691
+  md5: 883620774f147bf86f20aeb84c12f04b
   depends:
-  - __osx >=11.0
   - libcxx >=19
+  - __osx >=11.0
   constrains:
   - __osx >=11.0
   license: BSD-3-Clause
+  license_family: BSD
   run_exports: {}
-  size: 28914138
-  timestamp: 1783432240385
+  size: 29006799
+  timestamp: 1783617776443
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/pydantic-core-2.46.4-py314h54f3292_0.conda
   sha256: c034a7cc16f279c260d3456fcfc625838495a7f9f55aa79408a629a427769bb2
   md5: 16314d88257820013e698381af19153f
@@ -1388,17 +1407,18 @@ packages:
     - openssl >=3.6.3,<4.0a0
   size: 9414790
   timestamp: 1781071745579
-- conda: https://conda.anaconda.org/conda-forge/win-64/pixi-0.72.1-he94b42d_0.conda
-  sha256: c3957b0eb25182e2a6fe2ad0ac5a789a829e31a8d94cff76a905f59738b5463f
-  md5: 91050a24224c44e7dd46a7efc315a1bb
+- conda: https://conda.anaconda.org/conda-forge/win-64/pixi-0.72.2-he94b42d_0.conda
+  sha256: e169bc7a614c50e9a492a592a37f8b97aeabae8c1999c7a81f488b235b65a2e6
+  md5: 16a43f941e04e7f712a88095a8c9129b
   depends:
   - vc >=14.3,<15
   - vc14_runtime >=14.44.35208
   - ucrt >=10.0.20348.0
   license: BSD-3-Clause
+  license_family: BSD
   run_exports: {}
-  size: 32798503
-  timestamp: 1783432263058
+  size: 32792821
+  timestamp: 1783617801242
 - conda: https://conda.anaconda.org/conda-forge/win-64/pydantic-core-2.46.4-py314h9f07db2_0.conda
   sha256: 53621d25961c97ef77d7d03b8e0d479ee0bb8135b51d71e99a5ed7713a229f5f
   md5: a5a21f85bcee70d505798d56750d69cf
