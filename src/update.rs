@@ -1,9 +1,11 @@
 //! Self-update mechanism for the lembas CLI.
 //!
 //! Downloads pre-built binaries from GitHub releases and replaces the running binary atomically.
+//! Binaries are verified using Ed25519 signatures before installation.
 
 use std::io::Write;
 
+use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use futures_util::StreamExt;
 use indicatif::{ProgressBar, ProgressStyle};
 use miette::{Context, IntoDiagnostic, Result};
@@ -11,6 +13,17 @@ use serde::Deserialize;
 use thiserror::Error;
 
 const GITHUB_REPO: &str = "lembas-project/lembas-cli";
+
+/// Trusted public keys for verifying release signatures.
+/// Multiple keys are supported to allow key rotation:
+/// 1. Generate new keypair
+/// 2. Add new public key here, release new CLI
+/// 3. Update GitHub secret to new private key
+/// 4. (Later) Remove old public key
+const TRUSTED_PUBLIC_KEYS: &[&[u8; 32]] = &[
+    // Key 1 (2026-07-15): Initial signing key
+    include_bytes!("signing_keys/key1.pub"),
+];
 
 #[derive(Error, Debug, miette::Diagnostic)]
 pub enum UpdateError {
@@ -36,6 +49,21 @@ pub enum UpdateError {
     #[error("Failed to parse version: {0}")]
     #[diagnostic(code(lembas::update::version_parse))]
     VersionParse(String),
+
+    #[error("Signature file not found for release")]
+    #[diagnostic(code(lembas::update::signature_not_found))]
+    SignatureNotFound,
+
+    #[error("Invalid signature format")]
+    #[diagnostic(code(lembas::update::invalid_signature))]
+    InvalidSignature,
+
+    #[error("Signature verification failed - binary not signed by trusted key")]
+    #[diagnostic(
+        code(lembas::update::signature_verification_failed),
+        help("This could indicate a compromised release. Do not install.")
+    )]
+    SignatureVerificationFailed,
 }
 
 #[derive(Debug, Deserialize)]
@@ -166,22 +194,35 @@ pub async fn find_version(client: &reqwest::Client, version: &str) -> Result<Rel
         .ok_or_else(|| UpdateError::VersionNotFound(version.to_string()).into())
 }
 
-async fn download_release(client: &reqwest::Client, release: &Release) -> Result<Vec<u8>> {
-    let platform = get_platform_asset_name()?;
+/// Verify a binary's signature against any of the trusted public keys.
+fn verify_signature(binary: &[u8], signature_bytes: &[u8]) -> std::result::Result<(), UpdateError> {
+    let signature =
+        Signature::from_slice(signature_bytes).map_err(|_| UpdateError::InvalidSignature)?;
 
-    let asset = release
-        .assets
-        .iter()
-        .find(|a| a.name == platform)
-        .ok_or_else(|| UpdateError::AssetNotFound(platform.to_string()))?;
+    for key_bytes in TRUSTED_PUBLIC_KEYS {
+        let verifying_key =
+            VerifyingKey::from_bytes(key_bytes).map_err(|_| UpdateError::InvalidSignature)?;
 
+        if verifying_key.verify(binary, &signature).is_ok() {
+            return Ok(());
+        }
+    }
+
+    Err(UpdateError::SignatureVerificationFailed)
+}
+
+async fn download_asset(
+    client: &reqwest::Client,
+    asset: &GitHubAsset,
+    show_progress: bool,
+) -> Result<Vec<u8>> {
     let response = client
         .get(&asset.browser_download_url)
         .header("User-Agent", "lembas-cli")
         .send()
         .await
         .into_diagnostic()
-        .context("failed to download release")?;
+        .context("failed to download")?;
 
     if !response.status().is_success() {
         miette::bail!("download failed: {}", response.status());
@@ -189,26 +230,67 @@ async fn download_release(client: &reqwest::Client, release: &Release) -> Result
 
     let total_size = response.content_length().unwrap_or(asset.size);
 
-    let pb = ProgressBar::new(total_size);
-    pb.set_style(
-        ProgressStyle::default_bar()
-            .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})")
-            .unwrap()
-            .progress_chars("#>-"),
-    );
+    let pb = if show_progress {
+        let pb = ProgressBar::new(total_size);
+        pb.set_style(
+            ProgressStyle::default_bar()
+                .template(
+                    "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})",
+                )
+                .unwrap()
+                .progress_chars("#>-"),
+        );
+        Some(pb)
+    } else {
+        None
+    };
 
     let mut bytes = Vec::with_capacity(total_size as usize);
     let mut stream = response.bytes_stream();
 
     while let Some(chunk) = stream.next().await {
         let chunk = chunk.into_diagnostic().context("download interrupted")?;
-        pb.inc(chunk.len() as u64);
+        if let Some(ref pb) = pb {
+            pb.inc(chunk.len() as u64);
+        }
         bytes.extend_from_slice(&chunk);
     }
 
-    pb.finish_with_message("Downloaded");
+    if let Some(pb) = pb {
+        pb.finish_with_message("Downloaded");
+    }
 
     Ok(bytes)
+}
+
+async fn download_release(client: &reqwest::Client, release: &Release) -> Result<Vec<u8>> {
+    let platform = get_platform_asset_name()?;
+    let sig_name = format!("{}.sig", platform);
+
+    let binary_asset = release
+        .assets
+        .iter()
+        .find(|a| a.name == platform)
+        .ok_or_else(|| UpdateError::AssetNotFound(platform.to_string()))?;
+
+    let sig_asset = release
+        .assets
+        .iter()
+        .find(|a| a.name == sig_name)
+        .ok_or(UpdateError::SignatureNotFound)?;
+
+    // Download binary with progress bar
+    let binary = download_asset(client, binary_asset, true).await?;
+
+    // Download signature (small, no progress bar)
+    tracing::info!("Verifying signature...");
+    let signature = download_asset(client, sig_asset, false).await?;
+
+    // Verify signature before returning
+    verify_signature(&binary, &signature)?;
+    tracing::info!("Signature verified");
+
+    Ok(binary)
 }
 
 pub async fn perform_update(
@@ -306,5 +388,24 @@ mod tests {
         if std::env::consts::OS == "macos" || std::env::consts::OS == "linux" {
             assert!(result.is_ok());
         }
+    }
+
+    #[test]
+    fn test_verify_signature_rejects_invalid() {
+        let binary = b"hello world";
+        let bad_signature = [0u8; 64];
+        let result = verify_signature(binary, &bad_signature);
+        assert!(matches!(
+            result,
+            Err(UpdateError::SignatureVerificationFailed)
+        ));
+    }
+
+    #[test]
+    fn test_verify_signature_rejects_wrong_length() {
+        let binary = b"hello world";
+        let bad_signature = [0u8; 32]; // Wrong length
+        let result = verify_signature(binary, &bad_signature);
+        assert!(matches!(result, Err(UpdateError::InvalidSignature)));
     }
 }

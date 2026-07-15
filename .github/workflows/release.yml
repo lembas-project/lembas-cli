@@ -82,6 +82,18 @@ jobs:
             sha256sum "$file" > "${file}.sha256"
           done
 
+      - name: Sign binaries
+        env:
+          SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+        run: |
+          echo "$SIGNING_KEY" | base64 -d > /tmp/signing_key.bin
+          pip install pynacl
+          for file in release-assets/lembas-*; do
+            [[ "$file" == *.sha256 ]] && continue
+            python3 scripts/sign-binary.py "$file" /tmp/signing_key.bin
+          done
+          rm -f /tmp/signing_key.bin
+
       - name: Upload to release
         env:
           GH_TOKEN: ${{ github.token }}
