@@ -6,7 +6,6 @@
 
 #![deny(clippy::print_stdout, clippy::print_stderr)]
 
-use std::env;
 use std::process::ExitCode;
 
 use clap::Parser;
@@ -17,7 +16,7 @@ mod paths;
 mod runtime;
 mod update;
 
-use cli::{Cli, SelfCommands, SelfSubcommands};
+use cli::{Cli, Commands, SelfSubcommands};
 
 /// Get CLI version from build-time git describe (like setuptools-scm).
 fn cli_version() -> &'static str {
@@ -38,55 +37,41 @@ async fn main() -> ExitCode {
         .with_level(false)
         .init();
 
-    // Extract the args (ignoring the program name/entrypoint)
-    let args: Vec<String> = env::args().skip(1).collect();
+    let cli = Cli::parse();
 
     // Handle --version locally (fast, no bootstrap needed)
-    if args.first().map(|s| s.as_str()) == Some("--version") {
+    if cli.version {
         let lembas_ver = runtime::lembas_version().unwrap_or_else(|| "unknown".to_string());
         let cli_ver = cli_version();
         tracing::info!("lembas {} (cli build {})", lembas_ver, cli_ver);
         return ExitCode::SUCCESS;
     }
 
-    // Handle `self` commands via clap (no bootstrap needed)
-    if args.first().map(|s| s.as_str()) == Some("self") {
-        // Re-parse with clap for the self command
-        let cli = match Cli::try_parse() {
-            Ok(cli) => cli,
-            Err(e) => {
-                e.print().ok();
-                return if e.kind() == clap::error::ErrorKind::DisplayHelp
-                    || e.kind() == clap::error::ErrorKind::DisplayVersion
-                {
-                    ExitCode::SUCCESS
-                } else {
-                    ExitCode::FAILURE
-                };
+    match cli.command {
+        Some(Commands::SelfCmd { command }) => handle_self_command(command).await,
+        Some(Commands::External(args)) => run_python_lembas(&args).await,
+        None => {
+            // No command: delegate to Python (handles --help and bare invocation)
+            let args: Vec<String> = std::env::args().skip(1).collect();
+            let result = run_python_lembas(&args).await;
+            // Append update hint to help output
+            if args.is_empty() || args.iter().any(|a| a == "--help" || a == "-h") {
+                tracing::info!("To update, run `lembas self update`");
             }
-        };
-
-        return match cli.command {
-            SelfCommands::SelfCmd { command } => handle_self_command(command).await,
-        };
+            result
+        }
     }
+}
 
-    // Delegate to the managed lembas Python runtime
-    let result = match runtime::run_lembas(&args).await {
+async fn run_python_lembas(args: &[String]) -> ExitCode {
+    match runtime::run_lembas(args).await {
         Ok(0) => ExitCode::SUCCESS,
         Ok(code) => ExitCode::from(code as u8),
         Err(e) => {
             tracing::error!("{e:?}");
             ExitCode::FAILURE
         }
-    };
-
-    // Append CLI-only commands to help output
-    if args.first().map(|s| s.as_str()) == Some("--help") || args.is_empty() {
-        tracing::info!("To update, run `lembas self update`");
     }
-
-    result
 }
 
 async fn handle_self_command(command: SelfSubcommands) -> ExitCode {
@@ -96,7 +81,25 @@ async fn handle_self_command(command: SelfSubcommands) -> ExitCode {
             check,
             list,
             force,
-        } => handle_self_update(version, check, list, force).await,
+            help,
+        } => {
+            if help {
+                tracing::info!("Update the lembas CLI to the latest version");
+                tracing::info!("");
+                tracing::info!("Usage: lembas self update [OPTIONS] [VERSION]");
+                tracing::info!("");
+                tracing::info!("Arguments:");
+                tracing::info!("  [VERSION]  Version to install (e.g., v2026.7.1)");
+                tracing::info!("");
+                tracing::info!("Options:");
+                tracing::info!("      --check  Check if an update is available");
+                tracing::info!("      --list   List available versions");
+                tracing::info!("      --force  Force reinstall even if already on target version");
+                tracing::info!("  -h, --help   Print help");
+                return ExitCode::SUCCESS;
+            }
+            handle_self_update(version, check, list, force).await
+        }
     }
 }
 

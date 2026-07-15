@@ -5,19 +5,33 @@ use clap::{Parser, Subcommand};
 #[derive(Parser)]
 #[command(name = "lembas")]
 #[command(about = "Lembas CLI - Lifecycle Engineering Model-Based Analysis System")]
+#[command(disable_help_flag = true, disable_version_flag = true)]
+#[command(args_conflicts_with_subcommands = true)]
 pub struct Cli {
     #[command(subcommand)]
-    pub command: SelfCommands,
+    pub command: Option<Commands>,
+
+    /// Show help (delegated to Python runtime)
+    #[arg(long, short)]
+    pub help: bool,
+
+    /// Show version
+    #[arg(long)]
+    pub version: bool,
 }
 
 #[derive(Subcommand)]
-pub enum SelfCommands {
+pub enum Commands {
     /// Manage the lembas CLI itself
     #[command(name = "self")]
     SelfCmd {
         #[command(subcommand)]
         command: SelfSubcommands,
     },
+
+    /// Delegate to Python lembas runtime
+    #[command(external_subcommand)]
+    External(Vec<String>),
 }
 
 #[derive(Subcommand)]
@@ -38,5 +52,9 @@ pub enum SelfSubcommands {
         /// Force reinstall even if already on target version
         #[arg(long, conflicts_with_all = ["check", "list"])]
         force: bool,
+
+        /// Print help
+        #[arg(short, long)]
+        help: bool,
     },
 }
