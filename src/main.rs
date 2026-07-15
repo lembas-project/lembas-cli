@@ -50,14 +50,23 @@ async fn main() -> ExitCode {
     }
 
     // Delegate to the managed lembas Python runtime
-    match runtime::run_lembas(&args).await {
+    let result = match runtime::run_lembas(&args).await {
         Ok(0) => ExitCode::SUCCESS,
         Ok(code) => ExitCode::from(code as u8),
         Err(e) => {
             tracing::error!("{e:?}");
             ExitCode::FAILURE
         }
+    };
+
+    // Append CLI-only commands to help output
+    if args.first().map(|s| s.as_str()) == Some("--help") || args.is_empty() {
+        tracing::info!("");
+        tracing::info!("CLI Commands:");
+        tracing::info!("  self update    Update the lembas CLI binary");
     }
+
+    result
 }
 
 async fn handle_self_command(args: &[String]) -> ExitCode {
