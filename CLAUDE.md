@@ -112,11 +112,24 @@ lembas 0.3.1 (cli build 2026.7.0)
 Users can update the CLI binary in-place:
 
 ```bash
-lembas self update          # update to latest version
-lembas self update v2026.7.1  # update to specific version
-lembas self update --check  # check if update available
-lembas self update --list   # list available versions
-lembas self update --force  # force reinstall current version
+lembas self update              # update to latest version
+lembas self update v2026.7.1    # update to specific version
+lembas self update check        # check if update available
+lembas self update list         # list available versions
+lembas self update --force      # force reinstall current version
 ```
 
 Implementation uses `self-replace` crate for atomic binary replacement. Downloads pre-built binaries from GitHub releases matching the current platform (darwin-arm64, darwin-x86_64, linux-x86_64, linux-aarch64).
+
+### Release Signing
+
+Binaries are signed with Ed25519 to verify they come from the same publisher. The CLI verifies signatures before applying updates.
+
+**Key rotation:**
+1. Generate new keypair
+2. Add new public key to `src/signing_keys/` and update `TRUSTED_PUBLIC_KEYS` in `update.rs`
+3. Release new CLI version (users update to get the new key)
+4. Update `RELEASE_SIGNING_KEY` GitHub secret to new private key
+5. (Optional later) Remove old public key from array
+
+The private key is stored in `RELEASE_SIGNING_KEY` GitHub secret (base64-encoded). Public keys are embedded in the binary via `include_bytes!`.
