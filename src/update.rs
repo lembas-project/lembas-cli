@@ -120,11 +120,9 @@ async fn fetch_releases(client: &reqwest::Client) -> Result<Vec<Release>> {
         .into_diagnostic()
         .context("failed to parse releases")?;
 
-    let include_prereleases = std::env::var("LEMBAS_PRERELEASES").is_ok();
-
     let releases: Vec<Release> = github_releases
         .into_iter()
-        .filter(|r| !r.draft && (include_prereleases || !r.prerelease))
+        .filter(|r| !r.draft && !r.prerelease)
         .filter_map(|r| {
             let version = parse_version(&r.tag_name).ok()?;
             Some(Release {

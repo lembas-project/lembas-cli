@@ -120,5 +120,3 @@ lembas self update --force  # force reinstall current version
 ```
 
 Implementation uses `self-replace` crate for atomic binary replacement. Downloads pre-built binaries from GitHub releases matching the current platform (darwin-arm64, darwin-x86_64, linux-x86_64, linux-aarch64).
-
-Set `LEMBAS_PRERELEASES=1` to include prerelease versions in update checks.
