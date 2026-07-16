@@ -82,6 +82,22 @@ jobs:
             sha256sum "$file" > "${file}.sha256"
           done
 
+      - name: Install pixi
+        uses: prefix-dev/setup-pixi@19eac09b398e3d0c747adc7921926a6d802df4da # v0.8.8
+        with:
+          run-install: true
+
+      - name: Sign binaries
+        env:
+          SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+        run: |
+          echo "$SIGNING_KEY" | base64 -d > /tmp/signing_key.bin
+          for file in release-assets/lembas-*; do
+            [[ "$file" == *.sha256 ]] && continue
+            pixi run sign "$file" /tmp/signing_key.bin
+          done
+          rm -f /tmp/signing_key.bin
+
       - name: Upload to release
         env:
           GH_TOKEN: ${{ github.token }}
