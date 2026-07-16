@@ -14,16 +14,29 @@ use thiserror::Error;
 
 const GITHUB_REPO: &str = "lembas-project/lembas-cli";
 
-/// Trusted public keys for verifying release signatures.
+/// Trusted public keys for verifying release signatures (hex-encoded).
 /// Multiple keys are supported to allow key rotation:
 /// 1. Generate new keypair
 /// 2. Add new public key here, release new CLI
 /// 3. Update GitHub secret to new private key
 /// 4. (Later) Remove old public key
-const TRUSTED_PUBLIC_KEYS: &[&[u8; 32]] = &[
+const TRUSTED_PUBLIC_KEYS_HEX: &[&str] = &[
     // Key 1 (2026-07-15): Initial signing key
-    include_bytes!("signing_keys/key1.pub"),
+    include_str!("signing_keys/key1.pub"),
 ];
+
+fn decode_hex_key(hex: &str) -> Option<[u8; 32]> {
+    let hex = hex.trim();
+    if hex.len() != 64 {
+        return None;
+    }
+    let mut bytes = [0u8; 32];
+    for (i, chunk) in hex.as_bytes().chunks(2).enumerate() {
+        let s = std::str::from_utf8(chunk).ok()?;
+        bytes[i] = u8::from_str_radix(s, 16).ok()?;
+    }
+    Some(bytes)
+}
 
 #[derive(Error, Debug, miette::Diagnostic)]
 pub enum UpdateError {
@@ -199,9 +212,10 @@ fn verify_signature(binary: &[u8], signature_bytes: &[u8]) -> std::result::Resul
     let signature =
         Signature::from_slice(signature_bytes).map_err(|_| UpdateError::InvalidSignature)?;
 
-    for key_bytes in TRUSTED_PUBLIC_KEYS {
+    for key_hex in TRUSTED_PUBLIC_KEYS_HEX {
+        let key_bytes = decode_hex_key(key_hex).ok_or(UpdateError::InvalidSignature)?;
         let verifying_key =
-            VerifyingKey::from_bytes(key_bytes).map_err(|_| UpdateError::InvalidSignature)?;
+            VerifyingKey::from_bytes(&key_bytes).map_err(|_| UpdateError::InvalidSignature)?;
 
         if verifying_key.verify(binary, &signature).is_ok() {
             return Ok(());
