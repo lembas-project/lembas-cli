@@ -91,7 +91,7 @@ async fn handle_self_update(args: UpdateArgs) -> ExitCode {
     match args.action {
         Some(UpdateAction::List) => list_versions(&client).await,
         Some(UpdateAction::Check) => check_for_update(&client).await,
-        None => perform_update(&client, args.version, args.force).await,
+        None => perform_update(&client, args.version, args.force, args.skip_verify).await,
     }
 }
 
@@ -146,6 +146,7 @@ async fn perform_update(
     client: &reqwest::Client,
     version: Option<String>,
     force: bool,
+    skip_verify: bool,
 ) -> ExitCode {
     let release = if let Some(v) = version {
         match update::find_version(client, &v).await {
@@ -169,7 +170,7 @@ async fn perform_update(
         }
     };
 
-    match update::perform_update(client, &release, force).await {
+    match update::perform_update(client, &release, force, skip_verify).await {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => {
             tracing::error!("{e:?}");

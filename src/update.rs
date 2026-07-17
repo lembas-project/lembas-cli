@@ -277,7 +277,11 @@ async fn download_asset(
     Ok(bytes)
 }
 
-async fn download_release(client: &reqwest::Client, release: &Release) -> Result<Vec<u8>> {
+async fn download_release(
+    client: &reqwest::Client,
+    release: &Release,
+    skip_verify: bool,
+) -> Result<Vec<u8>> {
     let platform = get_platform_asset_name()?;
     let sig_name = format!("{}.sig", platform);
 
@@ -287,14 +291,19 @@ async fn download_release(client: &reqwest::Client, release: &Release) -> Result
         .find(|a| a.name == platform)
         .ok_or_else(|| UpdateError::AssetNotFound(platform.to_string()))?;
 
+    // Download binary with progress bar
+    let binary = download_asset(client, binary_asset, true).await?;
+
+    if skip_verify {
+        tracing::warn!("Skipping signature verification - this is dangerous!");
+        return Ok(binary);
+    }
+
     let sig_asset = release
         .assets
         .iter()
         .find(|a| a.name == sig_name)
         .ok_or(UpdateError::SignatureNotFound)?;
-
-    // Download binary with progress bar
-    let binary = download_asset(client, binary_asset, true).await?;
 
     // Download signature (small, no progress bar)
     tracing::info!("Verifying signature...");
@@ -311,6 +320,7 @@ pub async fn perform_update(
     client: &reqwest::Client,
     release: &Release,
     force: bool,
+    skip_verify: bool,
 ) -> Result<()> {
     if !force && release.version <= current_version() {
         tracing::info!(
@@ -323,7 +333,7 @@ pub async fn perform_update(
 
     tracing::info!("Downloading v{}...", release.version);
 
-    let binary = download_release(client, release).await?;
+    let binary = download_release(client, release, skip_verify).await?;
 
     // Write to temp file first
     let temp_dir = std::env::temp_dir();
