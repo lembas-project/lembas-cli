@@ -53,6 +53,10 @@ pub struct UpdateArgs {
     #[arg(long)]
     pub force: bool,
 
+    /// Skip signature verification (DANGEROUS - use only if verification is broken)
+    #[arg(long)]
+    pub skip_verify: bool,
+
     /// Print help
     #[arg(short, long)]
     pub help: bool,
@@ -81,7 +85,8 @@ impl UpdateArgs {
         tracing::info!("  [VERSION]  Version to install (e.g., v2026.7.1)");
         tracing::info!("");
         tracing::info!("Options:");
-        tracing::info!("      --force  Force reinstall even if already on target version");
-        tracing::info!("  -h, --help   Print help");
+        tracing::info!("      --force        Force reinstall even if already on target version");
+        tracing::info!("      --skip-verify  Skip signature verification (DANGEROUS)");
+        tracing::info!("  -h, --help         Print help");
     }
 }
