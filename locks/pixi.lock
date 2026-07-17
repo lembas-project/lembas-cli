@@ -71,7 +71,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing-inspection-0.4.2-pyhcf101f3_2.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.16.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025c-hc9c84f9_1.conda
-      - conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.3.1-pyh4616a5c_0.conda
+      - conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.4.0-pyh4616a5c_0.conda
       osx-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-doc-0.0.4-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-types-0.7.0-pyhd8ed1ab_1.conda
@@ -113,7 +113,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/tk-8.6.13-h7142dee_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/yaml-0.2.5-h4132b18_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zstd-1.5.7-h3eecb57_6.conda
-      - conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.3.1-pyh4616a5c_0.conda
+      - conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.4.0-pyh4616a5c_0.conda
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-doc-0.0.4-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-types-0.7.0-pyhd8ed1ab_1.conda
@@ -154,7 +154,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/tk-8.6.13-h010d191_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h925e9cb_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hbf9d68e_6.conda
-      - conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.3.1-pyh4616a5c_0.conda
+      - conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.4.0-pyh4616a5c_0.conda
       win-64:
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-doc-0.0.4-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/annotated-types-0.7.0-pyhd8ed1ab_1.conda
@@ -197,7 +197,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/vcomp14-14.51.36231-h1b9f54f_39.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/yaml-0.2.5-h6a83c73_3.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/zstd-1.5.7-h534d264_6.conda
-      - conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.3.1-pyh4616a5c_0.conda
+      - conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.4.0-pyh4616a5c_0.conda
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-20_gnu.conda
   build_number: 20
@@ -1573,9 +1573,9 @@ packages:
     - zstd >=1.5.7,<1.6.0a0
   size: 388453
   timestamp: 1764777142545
-- conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.3.1-pyh4616a5c_0.conda
-  sha256: ee121f7bb2bb26ca8ab3960c0e84ec6c26faa8f69c31b6170aa4eb9a55722789
-  md5: 0ac1286907093fd4a866c22b0d1c5f85
+- conda: https://conda.anaconda.org/lembas-project/noarch/lembas-0.4.0-pyh4616a5c_0.conda
+  sha256: 69bdd8f28c3500ddc16376c8ac6ac9cf3734f7cb7f0593fd8ff0767644064084
+  md5: 0f8fbaf56bf2e5497d4b1ccdc45a5ac0
   depends:
   - python >=3.11
   - pluggy <=1.6.0
@@ -1587,5 +1587,5 @@ packages:
   - tomlkit >=0.12
   - python
   license: MIT
-  size: 23307
-  timestamp: 1783605099185
+  size: 28063
+  timestamp: 1784309677548
