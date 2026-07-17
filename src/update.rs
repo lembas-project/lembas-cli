@@ -21,7 +21,9 @@ const GITHUB_REPO: &str = "lembas-project/lembas-cli";
 /// 3. Update GitHub secret to new private key
 /// 4. (Later) Remove old public key
 const TRUSTED_PUBLIC_KEYS_HEX: &[&str] = &[
-    // Key 1 (2026-07-15): Initial signing key
+    // Key 2 (2026-07-17): New signing key after key rotation
+    include_str!("signing_keys/key2.pub"),
+    // Key 1 (2026-07-15): Initial signing key (kept for transition)
     include_str!("signing_keys/key1.pub"),
 ];
 
