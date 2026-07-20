@@ -6,7 +6,8 @@
     "helpers:pinGitHubActionDigestsToSemver"
   ],
   "lockFileMaintenance": {
-    "enabled": true
+    "enabled": true,
+    "automerge": true
   },
   "packageRules": [
     {
@@ -20,12 +21,11 @@
       ]
     },
     {
-      "description": "Auto-merge lembas-core updates",
-      "matchManagers": [
-        "pixi"
-      ],
-      "matchPackageNames": [
-        "lembas"
+      "description": "Auto-merge minor and patch updates",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
       ],
       "automerge": true
     }
