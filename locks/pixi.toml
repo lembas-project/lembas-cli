@@ -8,5 +8,5 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 
 [dependencies]
 python = ">=3.11"
-lembas = "==0.5.0"  # Keep in sync with Cargo.toml version
+lembas = "==0.5.1"  # Keep in sync with Cargo.toml version
 pixi = "*"
