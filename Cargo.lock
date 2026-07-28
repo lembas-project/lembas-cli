@@ -2626,9 +2626,9 @@ dependencies = [
 
 [[package]]
 name = "rattler_lock"
-version = "0.31.6"
+version = "0.31.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bb4d5b4f8be6fc54f72ea0a0e1c3b30d0b6f63677259612503ba48df8b7fd2a"
+checksum = "af6a9f27e6425559264ac8172a4961646c93d826fe2d3f8219e3a7539b3ea703"
 dependencies = [
  "ahash",
  "file_url",
@@ -2809,9 +2809,9 @@ dependencies = [
 
 [[package]]
 name = "rattler_solve"
-version = "8.0.0"
+version = "9.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bee4c0be3272cf446477be2f6f0b2d5d9d659f5338ab907cea082095a86e6ed3"
+checksum = "47428b4adefb08d4b7b915f29a3ea716f6a329b75723355ea1eb63fc0a4eaac2"
 dependencies = [
  "hex",
  "itertools 0.15.0",
