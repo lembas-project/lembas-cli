@@ -779,6 +779,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "dirs"
+version = "7.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d57d423b3c82e89b9a24ca3091fee61f456a26edbd28d26c65906f4bc1dcd8f"
+dependencies = [
+ "dirs-sys",
+]
+
+[[package]]
 name = "dirs-sys"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1792,7 +1801,7 @@ name = "lembas-cli"
 version = "2026.7.0"
 dependencies = [
  "clap",
- "dirs",
+ "dirs 7.0.0",
  "ed25519-dalek",
  "futures-util",
  "indicatif",
@@ -2505,7 +2514,7 @@ dependencies = [
  "base64",
  "console",
  "digest 0.11.3",
- "dirs",
+ "dirs 6.0.0",
  "filetime",
  "fs-err",
  "futures",
@@ -2554,7 +2563,7 @@ dependencies = [
  "astral-reqwest-middleware",
  "dashmap",
  "digest 0.11.3",
- "dirs",
+ "dirs 6.0.0",
  "fs-err",
  "fs4",
  "futures",
@@ -2586,7 +2595,7 @@ checksum = "af4b193074dcc4e1ffd126abf5d3e00ffabb9f411adb4bff5f1cccaedfaabd22"
 dependencies = [
  "ahash",
  "core-foundation",
- "dirs",
+ "dirs 6.0.0",
  "fancy-regex",
  "file_url",
  "fs-err",
@@ -2701,7 +2710,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05ef866cc417def7091b56e39eac72714f6302b0e2c656c290a61ec08a8c585a"
 dependencies = [
  "configparser",
- "dirs",
+ "dirs 6.0.0",
  "fs-err",
  "hex",
  "indexmap 2.14.1",
