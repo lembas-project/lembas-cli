@@ -176,9 +176,9 @@ dependencies = [
 
 [[package]]
 name = "astral_async_zip"
-version = "0.0.20"
+version = "0.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd939d79959c3f49a648a1d7857d63cc62548725a6b060b8dbf0ea5c92470b63"
+checksum = "13f4a9bc6289d907c8e883d25026a54751d686da9926af271d0fc4cbe58a7f4d"
 dependencies = [
  "async-compression",
  "crc32fast",
@@ -207,16 +207,6 @@ name = "async-once-cell"
 version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4288f83726785267c6f2ef073a3d83dc3f9b81464e9f99898240cced85fce35a"
-
-[[package]]
-name = "async-spooled-tempfile"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5dd9c58a1dbecfc23aa470d57e5aff60877ab1b459bf05e60e861dd18fcaa5f5"
-dependencies = [
- "tempfile",
- "tokio",
-]
 
 [[package]]
 name = "async-trait"
@@ -2506,9 +2496,9 @@ dependencies = [
 
 [[package]]
 name = "rattler"
-version = "0.48.6"
+version = "0.48.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c133adb64a995c175177f46892d07efd0c5f4e273d2c40324a8b610afb4e4583"
+checksum = "99a17e40158f93b5cb3267fbb8b7b1fd58ecf23fd96d42af84ce77c348fb17a9"
 dependencies = [
  "anyhow",
  "astral-reqwest-middleware",
@@ -2555,9 +2545,9 @@ dependencies = [
 
 [[package]]
 name = "rattler_cache"
-version = "0.10.9"
+version = "0.10.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7e64312d6d46f99da527711b87e5c2506fe54e784dcaa188ec5226c4c218e16"
+checksum = "860fce3c29a8ed23515fe5affb254153fed2c256d5995953ad39dc77de8dd256"
 dependencies = [
  "ahash",
  "anyhow",
@@ -2667,9 +2657,9 @@ dependencies = [
 
 [[package]]
 name = "rattler_lock"
-version = "0.32.5"
+version = "0.32.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2986301fccf4b6ab81c940e82170f0aa91dd29116a7e13826282733c0199c4da"
+checksum = "5ef6a09af0b1bb282ea1eb1e0814534b753ac63a4f7953c3137323b45893407e"
 dependencies = [
  "ahash",
  "file_url",
@@ -2706,9 +2696,9 @@ dependencies = [
 
 [[package]]
 name = "rattler_menuinst"
-version = "0.2.77"
+version = "0.2.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29d63d07127436ed0d66efc976c7df4dc370d6dbd2ba2788ccaa80b441fa93f3"
+checksum = "05ef866cc417def7091b56e39eac72714f6302b0e2c656c290a61ec08a8c585a"
 dependencies = [
  "configparser",
  "dirs",
@@ -2765,18 +2755,18 @@ dependencies = [
 
 [[package]]
 name = "rattler_package_streaming"
-version = "0.27.4"
+version = "0.27.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a74e744b47ad00b639e8019f6a9ff5f2e7e6978885d74e9c0b3a19c31a6cf47e"
+checksum = "3d2b663bc38cb9ac00738887f7c9f9aa8f433dd3bf7535871fcb7900422fb7b6"
 dependencies = [
  "astral-reqwest-middleware",
  "astral-tokio-tar",
  "astral_async_http_range_reader",
  "astral_async_zip",
  "async-compression",
- "async-spooled-tempfile",
  "bytes",
  "bzip2",
+ "dunce",
  "filetime",
  "fs-err",
  "futures",
@@ -2851,9 +2841,9 @@ dependencies = [
 
 [[package]]
 name = "rattler_solve"
-version = "9.0.5"
+version = "9.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac531d879b29955e36e7f397f98d47229a22a3d1ef572fdac41b1b57814efbb7"
+checksum = "85e3b4ff578dc23be1d616173e4fa2550631f439901e832718b72158be2a0c0d"
 dependencies = [
  "hex",
  "itertools 0.15.0",
