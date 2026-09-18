@@ -25,7 +25,8 @@ pub async fn install_from_lockfile(lock_content: &str, prefix: &Path) -> miette:
         .default_environment()
         .ok_or_else(|| miette::miette!("lockfile has no default environment"))?;
 
-    let current_platform = Platform::current();
+    let current_platform = Platform::current()
+        .ok_or_else(|| miette::miette!("could not determine current platform"))?;
     let records_by_platform = env
         .conda_repodata_records_by_platform()
         .into_diagnostic()
@@ -99,7 +100,9 @@ pub async fn install_from_lockfile(lock_content: &str, prefix: &Path) -> miette:
 /// Get environment variables for running commands in the installed prefix.
 pub fn activation_env(prefix: &Path) -> miette::Result<HashMap<String, String>> {
     let shell = ShellEnum::default();
-    let activator = Activator::from_path(prefix, shell, Platform::current())
+    let current_platform = Platform::current()
+        .ok_or_else(|| miette::miette!("could not determine current platform"))?;
+    let activator = Activator::from_path(prefix, shell, current_platform)
         .into_diagnostic()
         .context("failed to create activator")?;
 
